@@ -1,0 +1,27 @@
+# Build results
+bin/
+obj/
+out/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# macOS system files
+.DS_Store
+
+# .NET
+*.log
+*.cache
+
+# Visual Studio / Rider
+.vs/
+.idea/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Secrets
+appsettings.*.json
