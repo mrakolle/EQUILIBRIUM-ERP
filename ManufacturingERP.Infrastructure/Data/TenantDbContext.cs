@@ -20,6 +20,9 @@ public class TenantDbContext : DbContext
     public DbSet<Product> Products => Set<Product>();
     public DbSet<Inventory> Inventory => Set<Inventory>();
     public DbSet<WorkOrder> WorkOrders => Set<WorkOrder>();
+    public DbSet<BOM> BOMs => Set<BOM>();
+    public DbSet<BOMItem> BOMItems => Set<BOMItem>();
+    public DbSet<StockTransaction> StockTransactions => Set<StockTransaction>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -30,6 +33,9 @@ public class TenantDbContext : DbContext
         modelBuilder.Entity<Product>().ToTable("Products");
         modelBuilder.Entity<Inventory>().ToTable("Inventory");
         modelBuilder.Entity<WorkOrder>().ToTable("WorkOrders");
+        modelBuilder.Entity<BOM>().ToTable("BOMs");
+        modelBuilder.Entity<BOMItem>().ToTable("BOMItems");
+        modelBuilder.Entity<StockTransaction>().ToTable("StockTransactions");
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
