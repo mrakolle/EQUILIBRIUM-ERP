@@ -1,7 +1,15 @@
+using System;
+
 namespace ManufacturingERP.Infrastructure.MultiTenancy;
 
 public class TenantProvider : ITenantProvider
 {
-    public string? Schema { get; set; }
-    public Guid? TenantId { get; set; }
+    public string? TenantId { get; private set; }
+    public string? Schema { get; private set; }
+
+    public void SetTenant(string tenantId, string schema)
+    {
+        TenantId = tenantId;
+        Schema = schema;
+    }
 }

@@ -21,9 +21,11 @@ public class TenantProvisioningService
 
     public async Task<Tenant> CreateTenantAsync(string tenantName)
     {
+        // 1. Generate schema name
         var tenantId = Guid.NewGuid().ToString("N");
         var tenantSchema = $"tenant_{tenantId}";
 
+        // 2. Create tenant record (PUBLIC DB)
         var tenant = new Tenant
         {
             Id = Guid.NewGuid(),
@@ -36,11 +38,14 @@ public class TenantProvisioningService
         _publicDb.Tenants.Add(tenant);
         await _publicDb.SaveChangesAsync();
 
+        // 3. Create tenant DB context
         await using var context = _factory.Create(tenantSchema);
 
+        // 🔥 4. CREATE SCHEMA (THIS replaces your old SET search_path)
         await context.Database.ExecuteSqlRawAsync(
-            $"SET search_path TO \"{tenantSchema}\"");
+            $"CREATE SCHEMA IF NOT EXISTS \"{tenantSchema}\"");
 
+        // 🔥 5. APPLY MIGRATIONS INTO THAT SCHEMA
         await context.Database.MigrateAsync();
 
         return tenant;

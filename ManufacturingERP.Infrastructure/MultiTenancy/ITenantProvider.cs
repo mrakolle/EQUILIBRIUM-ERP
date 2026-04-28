@@ -2,6 +2,8 @@ namespace ManufacturingERP.Infrastructure.MultiTenancy;
 
 public interface ITenantProvider
 {
-    string? Schema { get; set; }
-    Guid? TenantId { get; set; }
+    string? TenantId { get; }
+    string? Schema { get; }
+
+    void SetTenant(string tenantId, string schema);
 }

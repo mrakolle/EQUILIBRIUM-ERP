@@ -54,8 +54,7 @@ public class TenantMiddleware
             return;
         }
 
-        tenantProvider.TenantId = tenantId;
-        tenantProvider.Schema = tenant.Schema;
+        tenantProvider.SetTenant(tenantId.ToString(), tenant.Schema);
 
         await _next(context);
     }

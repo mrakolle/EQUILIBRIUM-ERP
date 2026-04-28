@@ -1,5 +1,6 @@
 using ManufacturingERP.Infrastructure.DependencyInjection;
 using ManufacturingERP.Infrastructure.MultiTenancy;
+using ManufacturingERP.Infrastructure.Data;
 using Hangfire;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,7 +12,8 @@ var configuration = builder.Configuration;
 // -------------------------------------------------
 
 builder.Services.AddControllers();
-
+builder.Services.AddScoped<TenantDbContextFactory>();
+builder.Services.AddScoped<ITenantProvider, TenantProvider>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

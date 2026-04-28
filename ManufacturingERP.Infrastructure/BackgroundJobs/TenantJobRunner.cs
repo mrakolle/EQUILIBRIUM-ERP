@@ -6,15 +6,15 @@ namespace ManufacturingERP.Infrastructure.BackgroundJobs;
 
 public class TenantJobRunner
 {
-    private readonly TenantExecutionContext _tenantContext;
+    /*private readonly TenantExecutionContext _tenantContext;
 
     public TenantJobRunner(TenantExecutionContext tenantContext)
     {
         _tenantContext = tenantContext;
-    }
+    }*/
 
     public async Task RunAsync(string schema, Func<Task> job)
     {
-        await _tenantContext.RunAsync(schema, job);
+       // await _tenantContext.RunAsync(schema, job);
     }
 }

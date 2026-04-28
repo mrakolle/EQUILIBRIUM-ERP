@@ -28,14 +28,23 @@ public class TenantDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.HasDefaultSchema(_schema);
+        //modelBuilder.HasDefaultSchema(_schema);
+        if (!string.IsNullOrWhiteSpace(_schema) && _schema != "design_time")
+        {
+            modelBuilder.HasDefaultSchema(_schema);
+        }
+        ConfigureFormulation(modelBuilder);
+        ConfigureWorkOrder(modelBuilder);
+        ConfigureBatch(modelBuilder);
+        ConfigureQC(modelBuilder);
+        ConfigureInventory(modelBuilder);
 
-        modelBuilder.Entity<Product>().ToTable("Products");
+        /*modelBuilder.Entity<Product>().ToTable("Products");
         modelBuilder.Entity<Inventory>().ToTable("Inventory");
         modelBuilder.Entity<WorkOrder>().ToTable("WorkOrders");
         modelBuilder.Entity<BOM>().ToTable("BOMs");
         modelBuilder.Entity<BOMItem>().ToTable("BOMItems");
-        modelBuilder.Entity<StockTransaction>().ToTable("StockTransactions");
+        modelBuilder.Entity<StockTransaction>().ToTable("StockTransactions");*/
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -46,6 +55,109 @@ public class TenantDbContext : DbContext
             .ReplaceService<IModelCacheKeyFactory, TenantModelCacheKeyFactory>()
             .ConfigureWarnings(warnings =>
                 warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+    }
+
+    private void ConfigureFormulation(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Formulation>(entity =>
+        {
+            entity.ToTable("Formulations");
+
+            entity.HasMany(f => f.Items)
+                .WithOne(i => i.Formulation)
+                .HasForeignKey(i => i.FormulationId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<FormulationItem>(entity =>
+        {
+            entity.ToTable("FormulationItems");
+        });
+    }
+    private void ConfigureWorkOrder(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<WorkOrder>(entity =>
+        {
+            entity.ToTable("WorkOrders");
+
+            entity.HasOne(w => w.Formulation)
+                .WithMany()
+                .HasForeignKey(w => w.FormulationId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    private void ConfigureBatch(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Batch>(entity =>
+        {
+            entity.ToTable("Batches");
+
+            entity.HasOne(b => b.WorkOrder)
+                .WithMany(w => w.Batches)
+                .HasForeignKey(b => b.WorkOrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<BatchConsumption>(entity =>
+        {
+            entity.ToTable("BatchConsumptions");
+
+            entity.HasOne(c => c.Batch)
+                .WithMany(b => b.Consumptions)
+                .HasForeignKey(c => c.BatchId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ProductionRecord>(entity =>
+        {
+            entity.ToTable("ProductionRecords");
+
+            entity.HasOne(p => p.Batch)
+                .WithMany(b => b.ProductionRecords)
+                .HasForeignKey(p => p.BatchId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private void ConfigureQC(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<QCTest>(entity =>
+        {
+            entity.ToTable("QCTests");
+
+            entity.HasOne(t => t.Batch)
+                .WithMany(b => b.QCTests)
+                .HasForeignKey(t => t.BatchId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<QCResult>(entity =>
+        {
+            entity.ToTable("QCResults");
+
+            entity.HasOne(r => r.QCTest)
+                .WithMany(t => t.Results)
+                .HasForeignKey(r => r.QCTestId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<QCApproval>(entity =>
+        {
+            entity.ToTable("QCApprovals");
+
+            entity.HasKey(a => a.Id);
+        });
+    }
+
+    private void ConfigureInventory(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Inventory>(entity =>
+        {
+            entity.ToTable("Inventory");
+
+            entity.HasKey(i => i.Id);
+        });
     }
 }
 
