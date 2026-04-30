@@ -1,19 +1,19 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using ManufacturingERP.Infrastructure.MultiTenancy;
 
 namespace ManufacturingERP.Infrastructure.Data;
 
 public class TenantDbContextFactory
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IConfiguration _configuration;
     private readonly ITenantProvider _tenantProvider;
 
     public TenantDbContextFactory(
-        IServiceProvider serviceProvider,
+        IConfiguration configuration,
         ITenantProvider tenantProvider)
     {
-        _serviceProvider = serviceProvider;
+        _configuration = configuration;
         _tenantProvider = tenantProvider;
     }
 
@@ -24,18 +24,26 @@ public class TenantDbContextFactory
         if (string.IsNullOrWhiteSpace(schema))
             throw new Exception("Tenant schema is not resolved.");
 
-        var options = _serviceProvider
-            .GetRequiredService<DbContextOptions<TenantDbContext>>();
+        var options = BuildOptions();
 
         return new TenantDbContext(options, schema);
     }
 
-    // 🔥 KEEP THIS (used during provisioning)
+    // 🔥 USED DURING TENANT CREATION
     public TenantDbContext Create(string schema)
     {
-        var options = _serviceProvider
-            .GetRequiredService<DbContextOptions<TenantDbContext>>();
+        var options = BuildOptions();
 
         return new TenantDbContext(options, schema);
+    }
+
+    // 🔥 CENTRALIZED OPTIONS CREATION
+    private DbContextOptions<TenantDbContext> BuildOptions()
+    {
+        var connectionString = _configuration.GetConnectionString("Default");
+
+        return new DbContextOptionsBuilder<TenantDbContext>()
+            .UseNpgsql(connectionString)
+            .Options;
     }
 }

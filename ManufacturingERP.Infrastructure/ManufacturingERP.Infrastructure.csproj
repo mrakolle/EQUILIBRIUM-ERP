@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ManufacturingERP.Domain\ManufacturingERP.Domain.csproj" />
+    <ProjectReference Include="..\ManufacturingERP.Application\ManufacturingERP.Application.csproj" />
   </ItemGroup>
 
 </Project>

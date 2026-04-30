@@ -1,14 +1,28 @@
 using Microsoft.AspNetCore.Mvc;
-
-namespace ManufacturingERP.Api.Controllers;
+using ManufacturingERP.Application.Services.Products;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/products")]
 public class ProductsController : ControllerBase
 {
-    [HttpGet]
-    public IActionResult Get()
+    private readonly IProductsService _service;
+
+    public ProductsController(IProductsService service)
     {
-        return Ok("API is working");
+        _service = service;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Get()
+    {
+        var result = await _service.GetAll();
+        return Ok(result);
+    }
+    [HttpPost]
+    [HttpPost]
+    public async Task<IActionResult> Create(CreateProductRequest request)
+    {
+        var product = await _service.Create(request);
+        return Ok(product);
     }
 }

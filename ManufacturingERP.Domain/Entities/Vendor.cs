@@ -22,7 +22,7 @@ public class Vendor : BaseEntity
     public bool IsSdsAvailable { get; set; }
     public string? SdsUrl { get; set; }
     public List<string> Certifications { get; set; } = new();
-    public bool ISOCompliant { get; set; } = ComplianceStatus.NonCompliant;
+    public ComplianceStatus ISOCompliant { get; set; } = ComplianceStatus.NonCompliant;
     public RiskTier RiskLevel { get; set; } = RiskTier.Secondary;
     public DateTime? LastAuditDate { get; set; }
 
