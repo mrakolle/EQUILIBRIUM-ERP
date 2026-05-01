@@ -2,7 +2,7 @@ using ManufacturingERP.Infrastructure.DependencyInjection;
 using ManufacturingERP.Infrastructure.MultiTenancy;
 using ManufacturingERP.Infrastructure.Services.Products;
 using ManufacturingERP.Application.Services.Products;
-using ManufacturingERP.Infrastructure.Data; // ✅ THIS LINE
+using ManufacturingERP.Infrastructure.Data; 
 using FluentValidation;
 using FluentValidation.AspNetCore;
 
