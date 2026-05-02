@@ -82,6 +82,22 @@ public class TenantDbContextFactory
     // 🔥 THE FIX — FORCE POSTGRES TO USE TENANT SCHEMA
     private static void SetSchema(TenantDbContext context, string schema)
     {
+        var conn = context.Database.GetDbConnection();
+
+        if (conn.State != System.Data.ConnectionState.Open)
+            conn.Open();
+
+        using var command = conn.CreateCommand();
+
+        // 🔥 critical fix
+        command.CommandText = $"SET search_path TO \"{schema}\", public";
+
+        command.ExecuteNonQuery();
+
+        Console.WriteLine($"✅ search_path set to: {schema},public");
+    }
+    /*private static void SetSchema(TenantDbContext context, string schema)
+    {
         context.Database.OpenConnection();
 
         using var command = context.Database.GetDbConnection().CreateCommand();
@@ -89,5 +105,5 @@ public class TenantDbContextFactory
         command.ExecuteNonQuery();
 
         Console.WriteLine($"✅ search_path set to: {schema}");
-    }
+    }*/
 }

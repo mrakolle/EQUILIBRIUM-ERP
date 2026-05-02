@@ -38,18 +38,28 @@ public class TenantProvisioningService
         _publicDb.Tenants.Add(tenant);
         await _publicDb.SaveChangesAsync();
 
-        // 3. Create tenant DB context
+        // 3. Create tenant context
         await using var context = _factory.Create(tenantSchema);
 
-        // 🔥 4. CREATE SCHEMA (THIS replaces your old SET search_path)
+        // 4. CREATE SCHEMA
         await context.Database.ExecuteSqlRawAsync(
             $"CREATE SCHEMA IF NOT EXISTS \"{tenantSchema}\"");
 
-        // 2. 🔍 DEBUG: check pending migrations
-        var pending = await context.Database.GetPendingMigrationsAsync();
-        Console.WriteLine($"Pending migrations: {string.Join(",", pending)}");
+        // 🔥 5. FORCE CONNECTION INTO SCHEMA (CRITICAL FIX)
+        var conn = context.Database.GetDbConnection();
 
-        // 🔥 5. APPLY MIGRATIONS INTO THAT SCHEMA
+        if (conn.State != System.Data.ConnectionState.Open)
+            await conn.OpenAsync();
+
+       /* using (var cmd = conn.CreateCommand())
+        {
+            cmd.CommandText = $"SET search_path TO \"{tenantSchema}\", public";
+            await cmd.ExecuteNonQueryAsync();
+        }*/
+
+        Console.WriteLine($"🚀 MIGRATING INTO SCHEMA: {tenantSchema}");
+
+        // 6. APPLY MIGRATIONS (NOW GUARANTEED CORRECT SCHEMA)
         await context.Database.MigrateAsync();
 
         return tenant;
