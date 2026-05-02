@@ -24,10 +24,22 @@ public class TenantMiddleware
 
         if (path != null && path.StartsWith("/api/tenants"))
         {
+            if (!string.IsNullOrWhiteSpace(tenantHeader) &&
+                Guid.TryParse(tenantHeader, out var parsedTenantId))
+            {
+                var existingTenant = await publicDb.Tenants
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(t => t.Id == parsedTenantId && t.IsActive);
+
+                if (existingTenant != null)
+                {
+                    tenantProvider.SetTenant(parsedTenantId.ToString(), existingTenant.Schema);
+                }
+            }
+
             await _next(context);
             return;
         }
-
         if (string.IsNullOrWhiteSpace(tenantHeader))
         {
             context.Response.StatusCode = 400;

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ManufacturingERP.Infrastructure.Migrations
 {
     [DbContext(typeof(TenantDbContext))]
-    [Migration("20260426174143_InitialTenantClean")]
-    partial class InitialTenantClean
+    [Migration("20260502171323_InitialTenant")]
+    partial class InitialTenant
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

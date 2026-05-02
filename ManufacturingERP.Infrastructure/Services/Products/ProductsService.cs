@@ -21,7 +21,9 @@ public class ProductsService : IProductsService
     }
     public async Task<Product> Create(CreateProductRequest request)
     {
+       // _trace.Step("ProductsService.Create START");
         await using var db = _factory.Create();
+        //_trace.Step($"Tenant Schema = {db.Schema}");
 
         var product = new Product
         {
@@ -33,8 +35,9 @@ public class ProductsService : IProductsService
         };
 
         db.Products.Add(product);
+        //_trace.Step("Before SaveChanges");
         await db.SaveChangesAsync();
-
+        //_trace.Step("After SaveChanges");
         return product;
     }
 }

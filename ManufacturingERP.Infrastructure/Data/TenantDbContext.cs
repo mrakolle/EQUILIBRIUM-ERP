@@ -14,7 +14,11 @@ public class TenantDbContext : DbContext
     public TenantDbContext(DbContextOptions<TenantDbContext> options, string schema)
         : base(options)
     {
+         EfContextGuard.Validate(this);
         _schema = schema;
+        //_schema = schema ?? throw new ArgumentNullException(nameof(schema));
+        Console.WriteLine($"🚨 DbContext CREATED WITH SCHEMA: {_schema}");
+        
     }
 
     public DbSet<Product> Products => Set<Product>();
@@ -24,29 +28,44 @@ public class TenantDbContext : DbContext
     public DbSet<BOMItem> BOMItems => Set<BOMItem>();
     public DbSet<StockTransaction> StockTransactions => Set<StockTransaction>();
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+   /* protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        //modelBuilder.HasDefaultSchema(_schema);
-        if (!string.IsNullOrWhiteSpace(_schema) && _schema != "design_time")
+        if (_schema == "design_time")
+            throw new Exception("❌ DESIGN_TIME LEAK");
+
+        Console.WriteLine($"🔥 USING SCHEMA: {_schema}");
+
+        foreach (var entity in modelBuilder.Model.GetEntityTypes())
         {
-            modelBuilder.HasDefaultSchema(_schema);
+            entity.SetSchema(_schema);
         }
+    }
+    */
+    
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+    base.OnModelCreating(modelBuilder);
+
+        // 🔥 CALL YOUR CONFIG METHODS (THIS IS WHAT WAS MISSING)
         ConfigureFormulation(modelBuilder);
         ConfigureWorkOrder(modelBuilder);
         ConfigureBatch(modelBuilder);
         ConfigureQC(modelBuilder);
         ConfigureInventory(modelBuilder);
 
-        /*modelBuilder.Entity<Product>().ToTable("Products");
-        modelBuilder.Entity<Inventory>().ToTable("Inventory");
-        modelBuilder.Entity<WorkOrder>().ToTable("WorkOrders");
-        modelBuilder.Entity<BOM>().ToTable("BOMs");
-        modelBuilder.Entity<BOMItem>().ToTable("BOMItems");
-        modelBuilder.Entity<StockTransaction>().ToTable("StockTransactions");*/
-    }
+    // 👉 add others if you have more
+    
 
+        //ConfigureFormulation(modelBuilder);
+        /*modelBuilder.HasDefaultSchema(_schema);
+
+        foreach (var entity in modelBuilder.Model.GetEntityTypes())
+        {
+            entity.SetSchema(_schema);
+        }*/
+    }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         base.OnConfiguring(optionsBuilder);
@@ -162,6 +181,19 @@ public class TenantDbContext : DbContext
 }
 
 // 🔥 CACHE KEY FIX (must stay outside DbContext)
+/*internal class TenantModelCacheKeyFactory : IModelCacheKeyFactory
+{
+    public object Create(DbContext context, bool designTime)
+    {
+        if (context is TenantDbContext tenantContext)
+        {
+            return (context.GetType(), tenantContext.Schema, designTime);
+        }
+
+        return (context.GetType(), designTime);
+    }
+}*/
+
 internal class TenantModelCacheKeyFactory : IModelCacheKeyFactory
 {
     public object Create(DbContext context, bool designTime)

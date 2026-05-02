@@ -35,12 +35,15 @@ builder.Services.AddInfrastructure(configuration);
 
 // ❌ DO NOT REGISTER TenantDbContext
 // builder.Services.AddDbContext<TenantDbContext>(); <-- NEVER again
+builder.Services.AddScoped<IRequestTracer, RequestTracer>();
+builder.Services.AddScoped<ExecutionContext>();
 
 // -------------------------------------------------
 // BUILD
 // -------------------------------------------------
 
 var app = builder.Build();
+app.Environment.IsDevelopment();
 
 // -------------------------------------------------
 // PIPELINE

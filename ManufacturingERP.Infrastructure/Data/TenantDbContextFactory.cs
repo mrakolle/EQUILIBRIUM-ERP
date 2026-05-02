@@ -17,33 +17,77 @@ public class TenantDbContextFactory
         _tenantProvider = tenantProvider;
     }
 
+    // 🔥 RUNTIME (normal requests)
     public TenantDbContext Create()
     {
         var schema = _tenantProvider.Schema;
 
-        if (string.IsNullOrWhiteSpace(schema))
-            throw new Exception("Tenant schema is not resolved.");
+        if (string.IsNullOrWhiteSpace(schema) || schema == "design_time")
+            throw new Exception("Invalid runtime tenant resolution");
 
-        var options = BuildOptions();
+        var context = new TenantDbContext(BuildOptions(schema), schema);
 
-        return new TenantDbContext(options, schema);
+        SetSchema(context, schema);
+
+        return context;
     }
 
-    // 🔥 USED DURING TENANT CREATION
+    // 🔥 PROVISIONING (tenant creation)
     public TenantDbContext Create(string schema)
     {
-        var options = BuildOptions();
+        if (string.IsNullOrWhiteSpace(schema) || schema == "design_time")
+            throw new Exception("Invalid provisioning schema");
 
-        return new TenantDbContext(options, schema);
+        Console.WriteLine($"🔥 FACTORY (PROVISIONING): {schema}");
+
+        var context = new TenantDbContext(BuildOptions(schema), schema);
+
+        SetSchema(context, schema);
+
+        return context;
     }
 
-    // 🔥 CENTRALIZED OPTIONS CREATION
-    private DbContextOptions<TenantDbContext> BuildOptions()
+    // 🔥 MIGRATIONS SAFETY (optional guard)
+    public TenantDbContext CreateForMigrations()
     {
-        var connectionString = _configuration.GetConnectionString("Default");
+        var schema = _tenantProvider.Schema;
+
+        if (schema == "design_time")
+            throw new InvalidOperationException("Design-time tenant blocked for migrations");
+
+        if (string.IsNullOrWhiteSpace(schema))
+            throw new InvalidOperationException("No tenant resolved");
+
+        var context = new TenantDbContext(BuildOptions(schema), schema);
+
+        SetSchema(context, schema);
+
+        return context;
+    }
+
+    // 🔥 CENTRALIZED OPTIONS
+    private DbContextOptions<TenantDbContext> BuildOptions(string schema)
+    {
+        var connectionString = _configuration.GetConnectionString("MasterDb");
 
         return new DbContextOptionsBuilder<TenantDbContext>()
-            .UseNpgsql(connectionString)
+            .UseNpgsql(connectionString, x =>
+            {
+                // each tenant has its own migration history
+                x.MigrationsHistoryTable("__EFMigrationsHistory", schema);
+            })
             .Options;
+    }
+
+    // 🔥 THE FIX — FORCE POSTGRES TO USE TENANT SCHEMA
+    private static void SetSchema(TenantDbContext context, string schema)
+    {
+        context.Database.OpenConnection();
+
+        using var command = context.Database.GetDbConnection().CreateCommand();
+        command.CommandText = $"SET search_path TO \"{schema}\"";
+        command.ExecuteNonQuery();
+
+        Console.WriteLine($"✅ search_path set to: {schema}");
     }
 }

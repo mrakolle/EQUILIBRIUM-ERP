@@ -22,7 +22,9 @@ public class ProductsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(CreateProductRequest request)
     {
+        //_trace.Step("ProductsController.Create START");
         var product = await _service.Create(request);
+       // _trace.Step("ProductsController.Create END");
         return Ok(product);
     }
 }

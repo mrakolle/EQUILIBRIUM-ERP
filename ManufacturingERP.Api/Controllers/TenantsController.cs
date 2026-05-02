@@ -18,7 +18,9 @@ public class TenantsController : ControllerBase
     [HttpPost("create")]
     public async Task<ActionResult<Tenant>> CreateTenant([FromBody] CreateTenantRequest request)
     {
+        //_trace.Step("TenantController.Create START");
         var tenant = await _tenantService.CreateTenantAsync(request.Name);
+       // _trace.Step("TenantController.Create END");
         return Ok(tenant);
     }
 }

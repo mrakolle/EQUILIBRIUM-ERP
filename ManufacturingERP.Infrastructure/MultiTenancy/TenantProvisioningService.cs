@@ -45,6 +45,10 @@ public class TenantProvisioningService
         await context.Database.ExecuteSqlRawAsync(
             $"CREATE SCHEMA IF NOT EXISTS \"{tenantSchema}\"");
 
+        // 2. 🔍 DEBUG: check pending migrations
+        var pending = await context.Database.GetPendingMigrationsAsync();
+        Console.WriteLine($"Pending migrations: {string.Join(",", pending)}");
+
         // 🔥 5. APPLY MIGRATIONS INTO THAT SCHEMA
         await context.Database.MigrateAsync();
 

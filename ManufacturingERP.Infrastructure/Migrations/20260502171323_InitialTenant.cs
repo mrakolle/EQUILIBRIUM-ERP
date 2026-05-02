@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ManufacturingERP.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialTenantClean : Migration
+    public partial class InitialTenant : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

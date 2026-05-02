@@ -16,10 +16,11 @@ public class TenantDbContextFactoryDesignTime : IDesignTimeDbContextFactory<Tena
 
         var connectionString = config.GetConnectionString("MasterDb");
 
-        var optionsBuilder = new DbContextOptionsBuilder<TenantDbContext>();
-        optionsBuilder.UseNpgsql(connectionString);
+        var options = new DbContextOptionsBuilder<TenantDbContext>()
+            .UseNpgsql(connectionString)
+            .Options;
 
-        // IMPORTANT: schema is irrelevant at design-time
-        return new TenantDbContext(optionsBuilder.Options, "design_time");
+        // HARD FIX: never allow tenant resolution here
+        return new TenantDbContext(options, "ignored");
     }
 }
